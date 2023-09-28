@@ -10,7 +10,7 @@
  */
 
 // Node.js core
-const fs = (__nccwpck_require__(7147).promises);
+const fs = __nccwpck_require__(7147);
 const os = __nccwpck_require__(2037);
 const path = __nccwpck_require__(1017);
 
@@ -18,16 +18,12 @@ const path = __nccwpck_require__(1017);
 const core = __nccwpck_require__(2186);
 const github = __nccwpck_require__(5438);
 const tc = __nccwpck_require__(7784);
-
 const http = __nccwpck_require__(6255);
 
-const project = {
-  owner: "streamthoughts",
-  repo: "jikkou",
-};
+const project = { owner: "streamthoughts", repo: "jikkou" };
 
 async function downloadCLI(url) {
-  core.debug(`Downloading Jikkou CLI from ${url}`);
+  core.info(`Downloading Jikkou CLI from ${url}`);
   const pathToCLIZip = await tc.downloadTool(url);
 
   let pathToCLI = "";
@@ -43,16 +39,14 @@ async function downloadCLI(url) {
     pathToCLI = await tc.extractZip(pathToCLIZip);
   }
 
-  core.debug(`Jikkou CLI path is ${pathToCLI}.`);
-
   if (!pathToCLIZip || !pathToCLI) {
     throw new Error(`Unable to download Jikkou from ${url}`);
   }
-
   return pathToCLI;
 }
 
-// arch in [arm, x32, x64...] (https://nodejs.org/api/os.html#os_os_arch)
+// arch in [arm, x32, x64...]
+// (https://nodejs.org/api/os.html#os_os_platform)
 function mapArch(arch) {
   const mappings = {
     x64: "x86_64",
@@ -60,10 +54,12 @@ function mapArch(arch) {
   return mappings[arch] || arch;
 }
 
-// os in [darwin, linux, win32...] (https://nodejs.org/api/os.html#os_os_platform)
+// os in [darwin, linux, win32...]
+// (https://nodejs.org/api/os.html#os_os_platform)
 function mapOS(os) {
   const mappings = {
     win32: "windows",
+    darwin: "osx",
   };
   return mappings[os] || os;
 }
@@ -76,8 +72,9 @@ async function getReleaseVersion(version) {
     },
   });
 
-  const url = `https://api.github.com/repos/${project.owner}/${project.repo}/releases/${version}`;
-  const res = await _http.get(url);
+  const res = await _http.get(
+    `https://api.github.com/repos/${project.owner}/${project.repo}/releases/${version}`,
+  );
   const body = await res.readBody();
   const response = JSON.parse(body);
   return response;
@@ -90,16 +87,26 @@ async function findLatestReleaseVersion() {
 
 async function getBuild(version, platform, arch) {
   const response = await getReleaseVersion(`tags/v${version}`);
+  if (!response || !response.assets) return null;
+
   const asset = response.assets.find((asset) =>
     asset.name.includes(`jikkou-${version}-${platform}-${arch}.zip`),
   );
-  return !asset ? null : { url: `${asset.browser_download_url}` };
+  return !asset
+    ? null
+    : {
+        name: `${asset.name}`,
+        url: `${asset.browser_download_url}`,
+        created_at: `${asset.created_at}`,
+        size: `${asset.size}`,
+      };
 }
 
 async function run() {
   try {
     // Gather GitHub Actions inputs
     const inputVersion = core.getInput("jikkou_version") || "latest";
+    const inputConfig = core.getInput("jikkou_config");
 
     // Gather OS details
     const osPlatform = os.platform();
@@ -107,7 +114,7 @@ async function run() {
     core.debug(`OS: {platform:"${osPlatform}", arch: "${osArch}"}`);
 
     // Gather Release
-    core.debug(`Finding releases for Jikkou version "${inputVersion}"`);
+    core.info(`Finding releases for Jikkou version "${inputVersion}"`);
     const platform = mapOS(osPlatform);
     const arch = mapArch(osArch);
 
@@ -116,22 +123,42 @@ async function run() {
       version = await findLatestReleaseVersion();
     }
 
-    core.debug(
+    core.info(
       `Getting build for Jikkou version ${version}: ${platform} ${arch}`,
     );
+
     const build = await getBuild(version, platform, arch);
     if (!build) {
       throw new Error(
         `Jikkou version ${version} not available for ${platform} and ${arch}`,
       );
     }
-    core.debug(build);
-
     // Download requested version
-    const pathToCLI = await downloadCLI(build.url);
+    const pathToCLIDirectory = await downloadCLI(build.url);
 
     // Add to path
+    const pathToCLI = path.resolve(
+      [pathToCLIDirectory, build.name.replace(".zip", ""), "bin"].join(
+        path.sep,
+      ),
+    );
+    core.info(`Jikkou CLI path is ${pathToCLI}`);
     core.addPath(pathToCLI);
+
+    if (inputConfig) {
+      const pathToConfigFile = path.resolve(inputConfig);
+      core.info(`Set environment variable JIKKOUCONFIG=${pathToConfigFile}`);
+      core.exportVariable("JIKKOUCONFIG", pathToConfigFile);
+    }
+
+    const release = {
+      version: version,
+      name: build.name,
+      url: build.url,
+      created_at: build.created_at,
+      size: build.size,
+    };
+
     return release;
   } catch (error) {
     core.error(error);
