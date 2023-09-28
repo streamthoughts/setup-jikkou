@@ -1,0 +1,39 @@
+name: 'Setup Jikkou'
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  jikkou-versions:
+    name: 'Jikkou Versions'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        jikkou-versions: [0.27.0, latest]
+
+    steps:
+      - name: Checkout GitHub repository
+        uses: actions/checkout@v4
+        with:
+          clean: true
+
+      - name: Setup Jikkou - ${{ matrix['jikkou-versions'] }}
+        uses: ./
+        with:
+          jikkou_version: ${{ matrix['jikkou-versions'] }}
+
+      - name: Validate Jikkou Version - ${{ matrix['jikkou-versions'] }}
+        if: ${{ matrix['jikkou-versions'] != 'latest' }}
+        run: jikkou -V | grep ${{ matrix['jikkou-versions']}}
+
+      - name: Validate Jikkou Version - ${{ matrix['jikkou-versions'] }}
+        if: ${{ matrix['jikkou-versions'] == 'latest' }}
+        run: jikkou -V | grep 'Jikkou version'
