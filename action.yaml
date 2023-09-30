@@ -9,6 +9,17 @@ inputs:
   jikkou_config:
     description: 'The path to the Jikkou CLI config file. If set, Jikkou CLI will be configured through the `JIKKOUCONFIG` environment variable.'
     required: false
+  jikkou_wrapper:
+    description: 'Whether or not to install a wrapper to wrap calls of the `jikkou` binary to expose its STDOUT, STDERR, and exit code as outputs named `stdout`, `stderr`, and `exitcode` respectively. Defaults to `true`.'
+    default: 'true'
+    required: false
+outputs:
+  stdout:
+    description: 'STDOUT of the Jikkou CLI execution call (only available if `jikkou-wrapper` is `true`).'
+  stderr:
+    description: 'STDERR of the Jikkou CLI execution call (only available if `jikkou-wrapper` is `true`).'
+  exitcode:
+    description: 'Exit code of the Jikkou CLI execution call (only available if `jikkou-wrapper` is `true`).'
 runs:
   using: 'node20'
   main: 'dist/index.js'

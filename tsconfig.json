@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "noImplicitAny": true,
+    "removeComments": true,
+    "preserveConstEnums": true,
+    "sourceMap": true,
+    "types": ["node"],
+    "typeRoots": ["node_modules/@types"]
+  },
+  "files": [
+    "wrapper/lib/exec-output-listener.ts"
+  ]
+}

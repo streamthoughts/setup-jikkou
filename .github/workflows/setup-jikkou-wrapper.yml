@@ -1,4 +1,4 @@
-name: 'Setup Jikkou'
+name: 'Setup Jikkou Wrapper'
 
 on:
   push:
@@ -11,13 +11,13 @@ defaults:
     shell: bash
 
 jobs:
-  jikkou-no-wrapper:
+  jikkou-wrapper:
     name: 'Jikkou Versions'
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
-        jikkou-versions: [0.29.0, latest]
+        jikkou-versions: [latest]
 
     steps:
       - name: Checkout GitHub repository
@@ -30,12 +30,18 @@ jobs:
         with:
           jikkou_version: ${{ matrix['jikkou-versions'] }}
           jikkou_config: ./config/jikkouconfig.json
-          jikkou_wrapper: false
+          jikkou_wrapper: true
 
       - name: Validate Jikkou Version - ${{ matrix['jikkou-versions'] }}
-        if: ${{ matrix['jikkou-versions'] != 'latest' }}
-        run: jikkou -V | grep ${{ matrix['jikkou-versions']}}
-
-      - name: Validate Jikkou Version - ${{ matrix['jikkou-versions'] }}
-        if: ${{ matrix['jikkou-versions'] == 'latest' }}
+        id: version
         run: jikkou -V | grep 'Jikkou version'
+
+      - name: 'Output stdout'
+        run: echo "${{ steps.version.outputs.stdout }}"
+
+      - name: 'Output stderr'
+        run: echo "${{ steps.version.outputs.stderr }}"
+
+      - name: 'Output exitcode'
+        run: echo "${{ steps.version.outputs.exitcode }}"
+        

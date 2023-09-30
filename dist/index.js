@@ -19,6 +19,7 @@ const core = __nccwpck_require__(2186);
 const github = __nccwpck_require__(5438);
 const tc = __nccwpck_require__(7784);
 const http = __nccwpck_require__(6255);
+const io = __nccwpck_require__(7436);
 
 const project = { owner: "streamthoughts", repo: "jikkou" };
 
@@ -102,11 +103,44 @@ async function getBuild(version, platform, arch) {
       };
 }
 
+async function installWrapper(pathToCLI) {
+  let source, target;
+
+  // If we're on Windows, then the executable ends with .exe
+  const exeSuffix = os.platform().startsWith("win") ? ".exe" : "";
+
+  // Rename jikkou(.exe) to jikkou-bin(.exe)
+  try {
+    source = [pathToCLI, `jikkou${exeSuffix}`].join(path.sep);
+    target = [pathToCLI, `jikkou-bin${exeSuffix}`].join(path.sep);
+    core.debug(`Moving binary from ${source} to ${target}`);
+    await io.mv(source, target);
+  } catch (e) {
+    core.error(`Unable to move binary from ${source} to ${target}`);
+    throw e;
+  }
+
+  // Install our wrapper as jikkou
+  try {
+    source = __nccwpck_require__.ab + "index1.js";
+    target = [pathToCLI, "jikkou"].join(path.sep);
+    core.debug(`Copying ${source} to ${target}.`);
+    await io.cp(__nccwpck_require__.ab + "index1.js", target);
+  } catch (e) {
+    core.error(`Unable to copy ${source} to ${target}.`);
+    throw e;
+  }
+
+  // Export a new environment variable, so our wrapper can locate the binary
+  core.exportVariable("JIKKOU_CLI_PATH", pathToCLI);
+}
+
 async function run() {
   try {
     // Gather GitHub Actions inputs
     const inputVersion = core.getInput("jikkou_version") || "latest";
     const inputConfig = core.getInput("jikkou_config");
+    const inputWrapper = core.getInput("jikkou_wrapper") === "true";
 
     // Gather OS details
     const osPlatform = os.platform();
@@ -142,14 +176,20 @@ async function run() {
         path.sep,
       ),
     );
-    core.info(`Jikkou CLI path is ${pathToCLI}`);
-    core.addPath(pathToCLI);
 
     if (inputConfig) {
       const pathToConfigFile = path.resolve(inputConfig);
       core.info(`Set environment variable JIKKOUCONFIG=${pathToConfigFile}`);
       core.exportVariable("JIKKOUCONFIG", pathToConfigFile);
     }
+
+    // Install Wrapper
+    if (inputWrapper) {
+      await installWrapper(pathToCLI);
+    }
+
+    core.info(`Jikkou CLI path is ${pathToCLI}`);
+    core.addPath(pathToCLI);
 
     const release = {
       version: version,

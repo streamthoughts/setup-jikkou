@@ -1,2 +1,11 @@
 /node_modules/
-/.idea/
+
+# ./wrapper/dist gets included in top-level ./dist
+wrapper/dist
+
+# Jetbrains IDEs
+.idea/
+.iml
+
+# dotenv environment variables file
+.env
