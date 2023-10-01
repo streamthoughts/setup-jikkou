@@ -7,7 +7,8 @@ inputs:
     default: 'latest'
     required: false
   jikkou_config:
-    description: 'The path to the Jikkou CLI config file. If set, Jikkou CLI will be configured through the `JIKKOUCONFIG` environment variable.'
+    description: 'The path to the Jikkou CLI config file. If set and file exist, Jikkou CLI will be configured through the `JIKKOUCONFIG` environment variable (Default: `/.jikkou/config.json`).'
+    default: "./.jikkou/config.json"
     required: false
   jikkou_wrapper:
     description: 'Whether or not to install a wrapper to wrap calls of the `jikkou` binary to expose its STDOUT, STDERR, and exit code as outputs named `stdout`, `stderr`, and `exitcode` respectively. Defaults to `true`.'

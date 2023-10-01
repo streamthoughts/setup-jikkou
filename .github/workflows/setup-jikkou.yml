@@ -29,7 +29,6 @@ jobs:
         uses: ./
         with:
           jikkou_version: ${{ matrix['jikkou-versions'] }}
-          jikkou_config: ./config/jikkouconfig.json
           jikkou_wrapper: false
 
       - name: Validate Jikkou Version - ${{ matrix['jikkou-versions'] }}
