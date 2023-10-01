@@ -1,6 +1,6 @@
 {
   "name": "setup-jikkou",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Setup Jikkou CLI for GitHub Actions",
   "main": "index.js",
   "repository": {
