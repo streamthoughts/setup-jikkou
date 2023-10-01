@@ -51,11 +51,11 @@ steps:
 
 This Action additionally supports the following inputs :
 
-| Property	        | Default  | Description                                                                                                                                                       |
-|------------------|----------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `jikkou_version` | `latest` | The version of Jikkou CLI to install. A value of `latest` will install the latest version of Jikkou CLI.                                                          |
-| `jikkou_config`  |          | The path to the Jikkou CLI config file. If set, Jikkou CLI will be configured through the `JIKKOUCONFIG` environment variable.                                    |
-| `jikkou_wrapper` | `true`   | If `true`,  wrap calls of the Jikkou CLI binary to expose its `STDOUT`, `STDERR`, and exit code as outputs named `stdout`, `stderr`, and `exitcode` respectively. |
+| Property	        | Default                 | Description                                                                                                                                                                     |
+|------------------|-------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `jikkou_version` | `latest`                | The version of Jikkou CLI to install. A value of `latest` will install the latest version of Jikkou CLI.                                                                        |
+| `jikkou_config`  | `./.jikkou/config.json` | The path to the Jikkou CLI config file. If set and file exist, Jikkou CLI will be configured through the `JIKKOUCONFIG` environment variable (Default: `./.jikkou/config.json`) |
+| `jikkou_wrapper` | `true`                  | If `true`,  wrap calls of the Jikkou CLI binary to expose its `STDOUT`, `STDERR`, and exit code as outputs named `stdout`, `stderr`, and `exitcode` respectively.               |
 
 ## Outputs
 

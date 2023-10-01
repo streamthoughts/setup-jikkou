@@ -7,7 +7,7 @@ inputs:
     default: 'latest'
     required: false
   jikkou_config:
-    description: 'The path to the Jikkou CLI config file. If set and file exist, Jikkou CLI will be configured through the `JIKKOUCONFIG` environment variable (Default: `/.jikkou/config.json`).'
+    description: 'The path to the Jikkou CLI config file. If set and file exist, Jikkou CLI will be configured through the `JIKKOUCONFIG` environment variable (Default: `./.jikkou/config.json`).'
     default: "./.jikkou/config.json"
     required: false
   jikkou_wrapper:
